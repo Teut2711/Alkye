@@ -2,6 +2,7 @@ from rest_framework import generics, permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
+from django.shortcuts import get_object_or_404
 
 
 class PostListCreate(generics.ListCreateAPIView):
@@ -41,6 +42,10 @@ class CommentListCreate(generics.ListCreateAPIView):
     def get_queryset(self):
         return Comment.objects.filter(post_id=self.kwargs["post_pk"])
 
-    # def perform_create(self, serializer):
-    #     post = get_object_or_404(Post, id=self.kwargs["post_pk"])
-    #     serializer.save(post=post)
+    def perform_create(self, serializer):
+        post = get_object_or_404(Post, id=self.kwargs["post_pk"])
+        serializer.save(
+            post=post,
+            author=self.request.user,
+            text=serializer.validated_data.get("text"),
+        )

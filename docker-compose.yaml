@@ -1,8 +1,8 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:13
-    ports: 
-      - "5432:5432"
     environment:
       POSTGRES_DB: django_blog
       POSTGRES_USER: postgres
@@ -14,22 +14,39 @@ services:
       retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  web:
-    build: .
+    
+  backend:
+    build:
+      context: blog_project
     ports:
       - "5000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      - DATABASE_NAME=django_blog
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=postgres
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
-    restart: on-failure
+      DATABASE_NAME: django_blog
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DJANGO_SUPERUSER_PASSWORD: admin
+      DJANGO_SUPERUSER_EMAIL: admin@admin.com
+      DJANGO_SUPERUSER_USERNAME: admin
+    restart: always
     volumes:
       - "./blog_project:/app/blog_project"
-      
+
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:5000/api/v1
+
+
 volumes:
   postgres_data:
+

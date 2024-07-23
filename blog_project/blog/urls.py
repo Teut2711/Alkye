@@ -9,7 +9,7 @@ urlpatterns = [
         name="post-detail",
     ),
     path(
-        "<int:post_pk>/comments/",
+        "<int:post_pk>/comment/",
         CommentListCreate.as_view(),
         name="comment-list-create",
     ),

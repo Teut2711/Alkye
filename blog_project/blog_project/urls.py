@@ -18,10 +18,52 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token["username"] = user.username
+
+        return token
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # Add custom claims
+        access_token = self.get_token(self.user)
+        data["access"] = str(access_token)
+        data["username"] = self.user.username
+
+        return data
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+class CustomTokenRefreshPairView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path(
+        "api/v1/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"
+    ),
+    path(
+        "api/v1/token/refresh/",
+        CustomTokenRefreshPairView.as_view(),
+        name="token_refresh",
+    ),
     path("api/v1/post/", include("blog.urls")),
 ]
