@@ -23,6 +23,15 @@ This project is a blogging application with a Django backend and a Next.js front
   - Client-side data fetching and form handling.
   - Tailwind CSS for responsive and modern design.
 
+
+
+## Installation Issues
+entrypoint.sh not found in backend logs
+Solution
+https://stackoverflow.com/questions/38905135/why-wont-my-docker-entrypoint-sh-execute
+
+
+
 ## Installation
 
 ### Backend
